@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}申请处理{% endblock %}
+
+{% block content %}
+<h2>学生申请处理</h2>
+
+<div class="content">
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>申请人</th>
+                    <th>学号</th>
+                    <th>申请类型</th>
+                    <th>申请内容</th>
+                    <th>提交时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>{{ req.user_name }}</td>
+                    <td>{{ req.student_id }}</td>
+                    <td>
+                        {% if req.request_type == 'grade_appeal' %}成绩申诉
+                        {% elif req.request_type == 'course_withdrawal' %}课程退选
+                        {% else %}其他{% endif %}
+                    </td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                        {{ req.content[:50] }}...
+                    </td>
+                    <td>{{ req.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if req.status == 'pending' %}
+                            <span style="color: #f39c12; font-weight: bold;">待处理</span>
+                        {% elif req.status == 'approved' %}
+                            <span style="color: #27ae60;">已通过</span>
+                        {% elif req.status == 'rejected' %}
+                            <span style="color: #e74c3c;">已拒绝</span>
+                        {% else %}
+                            {{ req.status }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button onclick="showReplyForm({{ req.id }})" class="btn btn-warning" style="padding: 5px 10px; font-size: 12px;">
+                            处理
+                        </button>
+                    </td>
+                </tr>
+
+                <tr id="reply-form-{{ req.id }}" style="display: none;">
+                    <td colspan="7">
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
+                            <h4>处理申请</h4>
+                            <form method="POST" action="/admin/reply_request/{{ req.id }}">
+                                <div class="form-group">
+                                    <label>申请内容</label>
+                                    <div style="padding: 10px; background: white; border: 1px solid #ddd; border-radius: 4px;">
+                                        {{ req.content }}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="reply-{{ req.id }}">处理意见 *</label>
+                                    <textarea id="reply-{{ req.id }}" name="reply" class="form-control" rows="4" required></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="status-{{ req.id }}">处理结果 *</label>
+                                    <select id="status-{{ req.id }}" name="status" class="form-control" required>
+                                        <option value="approved">通过</option>
+                                        <option value="rejected">拒绝</option>
+                                        <option value="processing">处理中</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" style="display: flex; gap: 10px;">
+                                    <button type="submit" class="btn btn-primary">提交处理结果</button>
+                                    <button type="button" class="btn" onclick="hideReplyForm({{ req.id }})">取消</button>
+                                </div>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function showReplyForm(requestId) {
+    document.getElementById('reply-form-' + requestId).style.display = 'table-row';
+}
+
+function hideReplyForm(requestId) {
+    document.getElementById('reply-form-' + requestId).style.display = 'none';
+}
+</script>
+{% endblock %}
