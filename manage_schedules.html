@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}课表管理{% endblock %}
+
+{% block content %}
+<h2>课表管理</h2>
+
+<div class="content">
+    <div class="card">
+        <h3>添加/编辑课表</h3>
+        <form method="POST" action="/admin/add_schedule" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <div class="form-group">
+                <label for="student_id">学生 *</label>
+                <select id="student_id" name="student_id" class="form-control" required onchange="loadStudentCourses(this.value)">
+                    <option value="">请选择学生</option>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.name }} ({{ student.student_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="course_name">课程名称 *</label>
+                <select id="course_name" name="course_name" class="form-control" required>
+                    <option value="">请先选择学生</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="class_time">上课时间 *</label>
+                <input type="text" id="class_time" name="class_time" class="form-control" required
+                       placeholder="如：周一 1-2节">
+            </div>
+
+            <div class="form-group">
+                <label for="location">上课地点 *</label>
+                <input type="text" id="location" name="location" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="teacher">任课教师 *</label>
+                <input type="text" id="teacher" name="teacher" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="semester">学期 *</label>
+                <input type="text" id="semester" name="semester" class="form-control" required
+                       placeholder="如：2023-2024-1">
+            </div>
+
+            <div class="form-group" style="grid-column: span 3;">
+                <button type="submit" class="btn btn-primary">保存课表</button>
+                <button type="button" class="btn btn-success" onclick="generateSchedule()">从选课自动生成</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" style="margin-top: 30px;">
+        <h3>课表列表</h3>
+        {% if schedules %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>学生姓名</th>
+                        <th>学号</th>
+                        <th>课程名称</th>
+                        <th>上课时间</th>
+                        <th>上课地点</th>
+                        <th>任课教师</th>
+                        <th>学期</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for schedule in schedules %}
+                    <tr>
+                        <td>{{ schedule.student_name }}</td>
+                        <td>{{ schedule.student_id }}</td>
+                        <td>{{ schedule.course_name }}</td>
+                        <td>{{ schedule.class_time }}</td>
+                        <td>{{ schedule.location }}</td>
+                        <td>{{ schedule.teacher }}</td>
+                        <td>{{ schedule.semester }}</td>
+                        <td>
+                            <button onclick="editSchedule({{ schedule.id }}, '{{ schedule.course_name }}', '{{ schedule.class_time }}', '{{ schedule.location }}', '{{ schedule.teacher }}', '{{ schedule.semester }}')"
+                                    class="btn btn-warning" style="padding: 5px 10px; font-size: 12px;">
+                                编辑
+                            </button>
+                            <a href="/admin/delete_schedule/{{ schedule.id }}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;"
+                               onclick="return confirm('确定要删除此课表吗？')">
+                                删除
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: #7f8c8d; text-align: center; padding: 30px;">暂无课表记录</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function loadStudentCourses(studentId) {
+    if (!studentId) return;
+
+    fetch(`/admin/get_student_courses/${studentId}`)
+        .then(response => response.json())
+        .then(data => {
+            const courseSelect = document.getElementById('course_name');
+            courseSelect.innerHTML = '<option value="">请选择课程</option>';
+
+            data.courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.course_name;
+                option.textContent = `${course.course_code} - ${course.course_name}`;
+                courseSelect.appendChild(option);
+            });
+        });
+}
+
+function generateSchedule() {
+    const studentId = document.getElementById('student_id').value;
+    if (!studentId) {
+        alert('请先选择学生');
+        return;
+    }
+
+    if (confirm('确定要为此学生从选课自动生成课表吗？')) {
+        window.location.href = `/admin/generate_schedule_from_selections/${studentId}`;
+    }
+}
+
+function editSchedule(id, courseName, classTime, location, teacher, semester) {
+    document.getElementById('student_id').value = '';
+    document.getElementById('course_name').value = courseName;
+    document.getElementById('class_time').value = classTime;
+    document.getElementById('location').value = location;
+    document.getElementById('teacher').value = teacher;
+    document.getElementById('semester').value = semester;
+
+    alert('编辑功能：修改后点击"保存课表"更新。注意：需要重新选择学生。');
+}
+</script>
+{% endblock %}

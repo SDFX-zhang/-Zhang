@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}成绩管理{% endblock %}
+
+{% block content %}
+<h2>成绩管理</h2>
+
+<div class="content">
+    <div class="card">
+        <h3>添加成绩</h3>
+        <form method="POST" action="/admin/add_grade" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+            <div class="form-group">
+                <label for="student_id">学生 *</label>
+                <select id="student_id" name="student_id" class="form-control" required>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.name }} ({{ student.student_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="course_name">课程名称 *</label>
+                <input type="text" id="course_name" name="course_name" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="score">成绩 *</label>
+                <input type="number" id="score" name="score" class="form-control" min="0" max="100" step="0.1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="semester">学期 *</label>
+                <input type="text" id="semester" name="semester" class="form-control" required 
+                       placeholder="如：2023-2024-1">
+            </div>
+            
+            <div class="form-group" style="grid-column: span 4;">
+                <button type="submit" class="btn btn-primary">添加成绩</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" style="margin-top: 30px;">
+        <h3>成绩列表</h3>
+        {% if grades %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>学生姓名</th>
+                        <th>学号</th>
+                        <th>课程名称</th>
+                        <th>成绩</th>
+                        <th>学期</th>
+                        <th>录入时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in grades %}
+                    <tr>
+                        <td>{{ grade.student_name }}</td>
+                        <td>{{ grade.student_id }}</td>
+                        <td>{{ grade.course_name }}</td>
+                        <td>
+                            <form method="POST" action="/admin/edit_grade/{{ grade.id }}" style="display: inline;">
+                                <input type="number" name="score" value="{{ grade.score }}" 
+                                       style="width: 80px; padding: 5px;" min="0" max="100" step="0.1">
+                                <button type="submit" class="btn btn-warning" style="padding: 5px 10px; font-size: 12px;">更新</button>
+                            </form>
+                        </td>
+                        <td>{{ grade.semester }}</td>
+                        <td>{{ grade.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="/admin/delete_grade/{{ grade.id }}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;"
+                               onclick="return confirm('确定要删除此成绩记录吗？')">
+                                删除
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: #7f8c8d; text-align: center; padding: 30px;">暂无成绩记录</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
