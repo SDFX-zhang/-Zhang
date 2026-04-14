@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}用户管理{% endblock %}
+
+{% block content %}
+<h2>用户管理</h2>
+
+<div class="content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <a href="/admin/create_user" class="btn btn-primary">添加新用户</a>
+        <div>
+            共 {{ users|length }} 个用户
+        </div>
+    </div>
+    
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>姓名</th>
+                    <th>学号</th>
+                    <th>角色</th>
+                    <th>院系</th>
+                    <th>注册时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.student_id or '-' }}</td>
+                    <td>
+                        {% if user.role == 'admin' %}
+                            <span style="color: #e74c3c; font-weight: bold;">管理员</span>
+                        {% else %}
+                            <span style="color: #3498db;">普通用户</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.department or '-' }}</td>
+                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="/admin/edit_user/{{ user.id }}" class="btn btn-warning" style="padding: 5px 10px; font-size: 12px;">编辑</a>
+                        {% if user.id != session.get('user_id') %}
+                            <a href="/admin/delete_user/{{ user.id }}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;"
+                               onclick="return confirm('确定要删除用户 {{ user.username }} 吗？')">
+                                删除
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
