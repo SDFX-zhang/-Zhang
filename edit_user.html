@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}编辑用户{% endblock %}
+
+{% block content %}
+<h2>编辑用户信息</h2>
+
+<div class="content">
+    <div style="max-width: 600px; margin: 0 auto;">
+        <div class="card">
+            <form method="POST" action="/admin/edit_user/{{ user.id }}">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" class="form-control" 
+                           value="{{ user.username }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">新密码 (留空则不修改)</label>
+                    <input type="password" id="password" name="password" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="name">姓名</label>
+                    <input type="text" id="name" name="name" class="form-control" 
+                           value="{{ user.name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="student_id">学号</label>
+                    <input type="text" id="student_id" name="student_id" class="form-control" 
+                           value="{{ user.student_id or '' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="department">院系</label>
+                    <input type="text" id="department" name="department" class="form-control" 
+                           value="{{ user.department or '' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">电话</label>
+                    <input type="text" id="phone" name="phone" class="form-control" 
+                           value="{{ user.phone or '' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">角色</label>
+                    <select id="role" name="role" class="form-control" required>
+                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>普通用户</option>
+                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>管理员</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                    <a href="/admin/users" class="btn">取消</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
